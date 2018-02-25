@@ -33,6 +33,24 @@ setpw() {
   sudo nvidia-smi -i $uuid -pl $pw
 }
 
+setfan() {
+  local uuid=$1
+  local fan_speed=$2
+  local id=$(find_index_by_uuid $uuid)
+  if [[ "$id" == "id-not-found" ]] ; then
+    echo "$uuid profile is not found!!"
+    return 1
+  fi
+  if [[ $fan_speed == "-1" ]] ; then
+    echo "Using default fan speed for $uuid"
+    return 0
+  fi
+
+  echo "setting $uuid fan_speed=$GPU_OFFSET"
+  sudo DISPLAY=:0 XAUTHORITY=/var/run/lightdm/root/:0 nvidia-settings -a [gpu:$id]/GPUFanControlState=1;
+  sudo DISPLAY=:0 XAUTHORITY=/var/run/lightdm/root/:0 nvidia-settings -a [fan:$id]/GPUTargetFanSpeed=$fan_speed;
+}
+
 setup_all_gpus() {
   local config_txt=$1
   local pw=
@@ -52,8 +70,10 @@ setup_all_gpus() {
       pw=$(/bin/grep $gpu $config_txt | awk '{print $2}')
       gr_offset=$(/bin/grep $gpu $config_txt | awk '{print $3}')
       mem_offset=$(/bin/grep $gpu $config_txt | awk '{print $4}')
+      fan_speed=$(/bin/grep $gpu $config_txt | awk '{print $5}')
       setpw $gpu $pw
       oc $gpu $gr_offset $mem_offset
+      setfan $gpu $fan_speed
     fi
   done
 }
