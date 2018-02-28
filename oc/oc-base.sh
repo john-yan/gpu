@@ -46,7 +46,7 @@ setfan() {
     return 0
   fi
 
-  echo "setting $uuid fan_speed=$GPU_OFFSET"
+  echo "setting $uuid fan_speed=$fan_speed"
   sudo DISPLAY=:0 XAUTHORITY=/var/run/lightdm/root/:0 nvidia-settings -a [gpu:$id]/GPUFanControlState=1;
   sudo DISPLAY=:0 XAUTHORITY=/var/run/lightdm/root/:0 nvidia-settings -a [fan:$id]/GPUTargetFanSpeed=$fan_speed;
 }
